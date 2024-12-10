@@ -1,6 +1,7 @@
 import pygame
 
 from custom_surface import CustomSurface
+from wall import WallManager
 
 # Konstanty
 SCREEN_WIDTH = 800
@@ -20,7 +21,8 @@ class App:
 
         # Komponenty
         # Vytvoření vlastního Surface
-        self.custom_surface = CustomSurface(200, 200, (100, 100))
+        self.custom_surface = CustomSurface(SCREEN_WIDTH, SCREEN_HEIGHT, (0, 0))
+        self.walls = WallManager()
 
     def run(self):
         '''Hlavní smyčka hry'''
@@ -37,6 +39,23 @@ class App:
             if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Ukončení hry
                 self.running = False
 
+            # Vytvoření nebo manipulace se zdmi
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Levé tlačítko myši
+                    keys = pygame.key.get_pressed()
+                    self.walls.start_dragging(event.pos, keys)
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Levé tlačítko myši
+                    self.walls.stop_dragging(event.pos)
+
+            if event.type == pygame.MOUSEMOTION:
+                self.walls.update_dragging(event.pos)
+
+            # Odstranění zdi
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DELETE:
+                    self.walls.delete_active_wall()
 
     def update(self):
         '''Aktualizace herního stavu'''
@@ -46,6 +65,7 @@ class App:
         '''Vykreslení herních prvků'''
         self.screen.fill((255, 255, 0)) # Vyplnění obrazovky žlutou barvou
         self.custom_surface.draw(self.screen) # Vykreslení vlastního Surface
+        self.walls.draw(self.screen)    # Vykreslení zdí
         pygame.display.flip() # Zobrazení vykreslených prvků
 
 
