@@ -1,6 +1,7 @@
 import pygame
 
 from custom_surface import CustomSurface
+from person_sprite import PersonSprite
 from wall import WallManager
 
 # Konstanty
@@ -23,6 +24,9 @@ class App:
         # Vytvoření vlastního Surface
         self.custom_surface = CustomSurface(SCREEN_WIDTH, SCREEN_HEIGHT, (0, 0))
         self.walls = WallManager()
+        self.person_sprites = pygame.sprite.Group()  # Skupina postav
+        self.person_sprites.add(PersonSprite(100, 100))  # Přidání jedné postavy
+
 
     def run(self):
         '''Hlavní smyčka hry'''
@@ -59,13 +63,16 @@ class App:
 
     def update(self):
         '''Aktualizace herního stavu'''
-        pass
+        keys = pygame.key.get_pressed()
+        self.person_sprites.update(keys, self.walls.get_walls())
+
 
     def draw(self):
         '''Vykreslení herních prvků'''
         self.screen.fill((255, 255, 0)) # Vyplnění obrazovky žlutou barvou
         self.custom_surface.draw(self.screen) # Vykreslení vlastního Surface
         self.walls.draw(self.screen)    # Vykreslení zdí
+        self.person_sprites.draw(self.screen)  # Vykreslení všech postav
         pygame.display.flip() # Zobrazení vykreslených prvků
 
 
