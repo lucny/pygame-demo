@@ -3,11 +3,7 @@ import pygame
 from custom_surface import CustomSurface
 from person_sprite import PersonSprite
 from wall import WallManager
-
-# Konstanty
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60    # Počet snímků za sekundu
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 
 
 class App:
@@ -25,8 +21,23 @@ class App:
         self.custom_surface = CustomSurface(SCREEN_WIDTH, SCREEN_HEIGHT, (0, 0))
         self.walls = WallManager()
         self.person_sprites = pygame.sprite.Group()  # Skupina postav
-        self.person_sprites.add(PersonSprite(100, 100, "media/sprite-person.png"))  # Přidání jedné postavy
+        self.bullets = pygame.sprite.Group()  # Skupina střel
+        self.person_sprites_list = []  # Seznam všech postav pro přepínání
+        self.add_person_sprites()  # Přidání postav
+        self.active_person_index = 0  # Index aktivní postavy
+        self.set_active_person(0)
 
+    def add_person_sprites(self):
+        '''Přidání postav do hry'''
+        self.person_sprites_list.append(PersonSprite(100, 100, "media/sprite-person.png", self.bullets))
+        self.person_sprites_list.append(PersonSprite(400, 300, "media/sprite-person.png", self.bullets))
+        for person in self.person_sprites_list:
+            self.person_sprites.add(person)
+
+    def set_active_person(self, index):
+        '''Nastaví aktivní postavu'''
+        for i, person in enumerate(self.person_sprites_list):
+            person.is_active = (i == index)
 
     def run(self):
         '''Hlavní smyčka hry'''
@@ -42,6 +53,11 @@ class App:
         for event in pygame.event.get():   # Projít všechny události ve frontě
             if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:  # Ukončení hry
                 self.running = False
+
+            # Přepínání aktivní postavy pomocí klávesy Tab
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+                self.active_person_index = (self.active_person_index + 1) % len(self.person_sprites_list)
+                self.set_active_person(self.active_person_index)
 
             # Vytvoření nebo manipulace se zdmi
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -65,6 +81,7 @@ class App:
         '''Aktualizace herního stavu'''
         keys = pygame.key.get_pressed()
         self.person_sprites.update(keys, self.walls.get_walls())
+        self.bullets.update(self.walls.get_walls(), self.person_sprites)
 
 
     def draw(self):
@@ -73,6 +90,7 @@ class App:
         self.custom_surface.draw(self.screen) # Vykreslení vlastního Surface
         self.walls.draw(self.screen)    # Vykreslení zdí
         self.person_sprites.draw(self.screen)  # Vykreslení všech postav
+        self.bullets.draw(self.screen)  # Vykreslení střel
         pygame.display.flip() # Zobrazení vykreslených prvků
 
 

@@ -1,9 +1,11 @@
 import pygame
 
+from bullet import Bullet
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class PersonSprite(pygame.sprite.Sprite):
     '''Třída reprezentující animovanou postavu'''
-    def __init__(self, x, y, sprite_sheet_path):
+    def __init__(self, x, y, sprite_sheet_path, bullets_group):
         super().__init__()
         # Načtení sprite sheetu
         self.sprite_sheet = pygame.image.load(sprite_sheet_path).convert_alpha()
@@ -14,6 +16,8 @@ class PersonSprite(pygame.sprite.Sprite):
         self.directions = ["down", "left", "right", "up"]
         self.frames = self.load_frames()
 
+        self.bullets_group = bullets_group
+
         # Počáteční stav
         self.image = self.frames["down"][0]  # Výchozí snímek (stojící postava)
         self.rect = self.image.get_rect(topleft=(x, y))
@@ -22,6 +26,7 @@ class PersonSprite(pygame.sprite.Sprite):
         self.animation_speed = 0.1  # Rychlost animace
         self.animation_counter = 0
         self.speed = 5
+        self.is_active = False  # Příznak, zda je postava aktivní
 
     def load_frames(self):
         '''Načte snímky ze sprite sheetu a uloží je do slovníku'''
@@ -38,10 +43,11 @@ class PersonSprite(pygame.sprite.Sprite):
 
     def update(self, keys, walls):
         '''Aktualizace postavy (pohyb + animace)'''
+        if not self.is_active:  # Neaktivní postava se neaktualizuje
+            return
         dx, dy = 0, 0
         direction = None
 
-        # Pohyb a směr
         if keys[pygame.K_LEFT]:
             dx = -self.speed
             direction = "left"
@@ -55,20 +61,20 @@ class PersonSprite(pygame.sprite.Sprite):
             dy = self.speed
             direction = "down"
 
-        # Předběžný pohyb
         new_rect = self.rect.move(dx, dy)
 
-        # Kontrola kolizí se zdmi
         if not any(new_rect.colliderect(wall.rect) for wall in walls):
             self.rect = new_rect
 
-        # Animace
         if direction:
             self.current_direction = direction
             self.animate()
         else:
-            self.animation_index = 0  # Reset na první snímek, pokud postava stojí
+            self.animation_index = 0
             self.image = self.frames[self.current_direction][0]
+
+        if keys[pygame.K_SPACE]:
+            self.shoot(self.bullets_group)
 
     def animate(self):
         '''Animace postavy'''
@@ -77,3 +83,9 @@ class PersonSprite(pygame.sprite.Sprite):
             self.animation_counter = 0
             self.animation_index = (self.animation_index + 1) % len(self.frames[self.current_direction])
             self.image = self.frames[self.current_direction][self.animation_index]
+
+    def shoot(self, bullets_group):
+        '''Vystřelení střely'''
+        bullet = Bullet(self.rect.centerx, self.rect.centery, self.current_direction)
+        bullets_group.add(bullet)
+
