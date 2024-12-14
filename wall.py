@@ -114,4 +114,8 @@ class WallManager:
     def draw(self, target_surface):
         '''Vykreslení zdí'''
         for wall in self.walls:
+            # Deaktivace zdí, které nejsou aktivní
+            if wall != self.active_wall:
+                wall.active = False
             wall.draw(target_surface)
+
