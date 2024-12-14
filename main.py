@@ -25,7 +25,7 @@ class App:
         self.custom_surface = CustomSurface(SCREEN_WIDTH, SCREEN_HEIGHT, (0, 0))
         self.walls = WallManager()
         self.person_sprites = pygame.sprite.Group()  # Skupina postav
-        self.person_sprites.add(PersonSprite(100, 100))  # Přidání jedné postavy
+        self.person_sprites.add(PersonSprite(100, 100, "media/sprite-person.png"))  # Přidání jedné postavy
 
 
     def run(self):
