@@ -27,6 +27,7 @@ class PersonSprite(pygame.sprite.Sprite):
         self.animation_counter = 0
         self.speed = 5
         self.is_active = False  # Příznak, zda je postava aktivní
+        self.space_pressed = False  # Příznak, zda byla mezerník předtím stisknut
 
     def load_frames(self):
         '''Načte snímky ze sprite sheetu a uloží je do slovníku'''
@@ -73,8 +74,12 @@ class PersonSprite(pygame.sprite.Sprite):
             self.animation_index = 0
             self.image = self.frames[self.current_direction][0]
 
+        # Střelba při uvolnění mezerníku
         if keys[pygame.K_SPACE]:
+            self.space_pressed = True
+        elif self.space_pressed:  # Pokud byla mezerník uvolněna
             self.shoot(self.bullets_group)
+            self.space_pressed = False
 
     def animate(self):
         '''Animace postavy'''
