@@ -1,6 +1,9 @@
+import random
+
 import pygame
 
 from custom_surface import CustomSurface
+from enemy import Enemy
 from person_sprite import PersonSprite
 from wall import WallManager
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
@@ -22,8 +25,10 @@ class App:
         self.walls = WallManager()
         self.person_sprites = pygame.sprite.Group()  # Skupina postav
         self.bullets = pygame.sprite.Group()  # Skupina střel
+        self.enemies = pygame.sprite.Group()  # Skupina nepřátel
         self.person_sprites_list = []  # Seznam všech postav pro přepínání
         self.add_person_sprites()  # Přidání postav
+        self.add_enemies()  # Přidání nepřátel
         self.active_person_index = 0  # Index aktivní postavy
         self.set_active_person(0)
 
@@ -33,6 +38,19 @@ class App:
         self.person_sprites_list.append(PersonSprite(400, 300, "media/sprite-person.png", self.bullets))
         for person in self.person_sprites_list:
             self.person_sprites.add(person)
+
+    def add_enemies(self):
+        '''Přidání nepřátel do hry bez překrývání'''
+        for _ in range(5):  # Přidá 5 nepřátel
+            while True:
+                x = random.randrange(50, SCREEN_WIDTH - 50)
+                y = random.randrange(50, SCREEN_HEIGHT - 50)
+                new_enemy = Enemy(x, y)
+
+                # Kontrola, zda se nepřítel nepřekrývá s jinými
+                if not any(new_enemy.rect.colliderect(enemy.rect) for enemy in self.enemies):
+                    self.enemies.add(new_enemy)
+                    break
 
     def set_active_person(self, index):
         '''Nastaví aktivní postavu'''
@@ -82,7 +100,14 @@ class App:
         keys = pygame.key.get_pressed()
         self.person_sprites.update(keys, self.walls.get_walls())
         self.bullets.update(self.walls.get_walls(), self.person_sprites)
+        self.enemies.update()
 
+        # Kontrola kolize střel s nepřáteli
+        for bullet in self.bullets:
+            hit_enemies = pygame.sprite.spritecollide(bullet, self.enemies, True)
+            if hit_enemies:
+                bullet.kill()
+                self.person_sprites_list[self.active_person_index].score += len(hit_enemies)
 
     def draw(self):
         '''Vykreslení herních prvků'''
@@ -91,6 +116,14 @@ class App:
         self.walls.draw(self.screen)    # Vykreslení zdí
         self.person_sprites.draw(self.screen)  # Vykreslení všech postav
         self.bullets.draw(self.screen)  # Vykreslení střel
+        self.enemies.draw(self.screen)  # Vykreslení nepřátel
+
+        # Zobrazení skóre pod postavami
+        font = pygame.font.SysFont(None, 24)
+        for person in self.person_sprites_list:
+            score_text = font.render(f"{person.score}", True, (0, 0, 0))
+            self.screen.blit(score_text, (person.rect.x + 28, person.rect.bottom + 3))
+
         pygame.display.flip() # Zobrazení vykreslených prvků
 
 

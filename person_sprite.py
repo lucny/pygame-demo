@@ -29,6 +29,7 @@ class PersonSprite(pygame.sprite.Sprite):
         self.speed = 5 # Rychlost postavy
         self.is_active = False  # Příznak, zda je postava aktivní
         self.space_pressed = False  # Příznak, zda byla mezerník předtím stisknut
+        self.score = 0
 
     def load_frames(self):
         '''Načte snímky ze sprite sheetu a uloží je do slovníku'''
