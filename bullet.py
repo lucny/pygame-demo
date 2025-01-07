@@ -7,10 +7,10 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.Surface((10, 10))  # Střela jako malá kulička
         self.image.fill((255, 0, 0))  # Červená barva
-        self.rect = self.image.get_rect(center=(x, y))
-        self.speed = 10
-        self.direction = direction
-        self.dx, self.dy = self.get_velocity(direction)
+        self.rect = self.image.get_rect(center=(x, y)) # Střela na zadané pozici
+        self.speed = 10 # Rychlost střely
+        self.direction = direction # Směr střely
+        self.dx, self.dy = self.get_velocity(direction) # Rychlost střely ve směru
         self.energy = initial_energy  # Počáteční energie střely
 
 
